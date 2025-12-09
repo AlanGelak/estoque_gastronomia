@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestão de Estoque Gastronômico</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <h1>Gestão de Estoque Gastronômico</h1>
+    <span class="env-tag">API: http://localhost:8001</span>
+  </header>
+
+
+
+  <div class="layout">
+    <!-- LADO ESQUERDO: ESTOQUE -->
+    <aside class="sidebar">
+      <h2>Estoque atual</h2>
+      <p class="help-text">Valores arredondados para 2 casas decimais.</p>
+      <ul id="lista-estoque" class="estoque-lista">
+        <!-- preenchido via JS -->
+      </ul>
+      <button id="btn-atualizar-estoque" class="btn-outline">Atualizar estoque</button>
+    </aside>
+
+    <!-- LADO DIREITO: CONTEÚDO PRINCIPAL -->
+    <main class="main">
+      <!-- Abas -->
+      <nav class="tabs">
+        <button class="tab active" data-tab="tab-requisicoes">Requisições</button>
+        <button class="tab" data-tab="tab-cadastros">Cadastros</button>
+        <button class="tab" data-tab="tab-receitas">Receitas</button>
+      </nav>
+
+      <!-- ====================== REQUISIÇÕES ====================== -->
+      <section id="tab-requisicoes" class="tab-content active">
+        <div class="grid-2">
+          <!-- Requisição de ingredientes -->
+          <section class="card">
+            <h2>Retirada de ingredientes</h2>
+            <form id="form-requisicao-ingrediente" class="form">
+              <label>
+                Ingrediente
+                <select id="select-ingrediente" required></select>
+              </label>
+
+              <label>
+                Quantidade
+                <input id="input-qtd-ingrediente" type="number" min="0.01" step="0.01" required />
+              </label>
+
+              <label>
+                Motivo
+                <input id="input-motivo-ingrediente" type="text" placeholder="Ex: uso na cozinha" />
+              </label>
+
+              <button type="submit" class="btn-primary">Retirar do estoque</button>
+            </form>
+          </section>
+
+          <!-- Requisição de pratos -->
+          <section class="card">
+            <h2>Retirada de pratos (venda)</h2>
+            <form id="form-requisicao-prato" class="form">
+              <label>
+                Prato
+                <select id="select-prato" required></select>
+              </label>
+
+              <label>
+                Quantidade de pratos
+                <input id="input-qtd-prato" type="number" min="1" step="1" value="1" required />
+              </label>
+
+              <button type="submit" class="btn-primary">
+                Registrar venda e baixar estoque
+              </button>
+            </form>
+            <p class="help-text">
+              Esta ação chama o endpoint <code>POST /vendas/:idPrato</code>
+              uma vez para cada prato vendido.
+            </p>
+          </section>
+        </div>
+      </section>
+
+      <!-- ====================== CADASTROS (CRUD) ====================== -->
+      <section id="tab-cadastros" class="tab-content">
+        <div class="grid-2">
+          <!-- Categorias -->
+          <section class="card">
+            <h2>Categorias</h2>
+            <form id="form-categoria" class="form-inline">
+              <input id="input-categoria-nome" type="text" placeholder="Nome da categoria" required />
+              <button type="submit" class="btn-primary">Adicionar</button>
+            </form>
+            <table class="table" id="tabela-categorias">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </section>
+
+          <!-- Ingredientes -->
+          <section class="card">
+            <h2>Ingredientes</h2>
+            <form id="form-ingrediente" class="form-inline">
+              <input id="input-ingrediente-nome" type="text" placeholder="Nome do ingrediente" required />
+              <input id="input-ingrediente-unidade" type="text" placeholder="Unidade (g, ml, un...)" required />
+              <button type="submit" class="btn-primary">Adicionar</button>
+            </form>
+            <table class="table" id="tabela-ingredientes">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome</th>
+                  <th>Unidade</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </section>
+
+          <!-- Pratos -->
+          <section class="card">
+            <h2>Pratos</h2>
+            <form id="form-prato" class="form-inline">
+              <input id="input-prato-nome" type="text" placeholder="Nome do prato" required />
+              <input id="input-prato-preco" type="number" min="0" step="0.01" placeholder="Preço" required />
+              <button type="submit" class="btn-primary">Adicionar</button>
+            </form>
+            <table class="table" id="tabela-pratos">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome</th>
+                  <th>Preço</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </section>
+
+          <!-- Movimentação manual de estoque (entrada) -->
+          <section class="card">
+            <h2>Entrada de estoque</h2>
+            <form id="form-entrada-estoque" class="form">
+              <label>
+                Ingrediente
+                <select id="select-ingrediente-entrada" required></select>
+              </label>
+
+              <label>
+                Quantidade
+                <input id="input-qtd-entrada" type="number" min="0.01" step="0.01" required />
+              </label>
+
+              <label>
+                Motivo
+                <input id="input-motivo-entrada" type="text" placeholder="Ex: compra de insumos" />
+              </label>
+
+              <button type="submit" class="btn-primary">Registrar entrada</button>
+            </form>
+          </section>
+        </div>
+      </section>
+
+      <!-- ====================== RECEITAS ====================== -->
+      <section id="tab-receitas" class="tab-content">
+        <div class="grid-2">
+          <!-- Cadastro de receita -->
+          <section class="card">
+            <h2>Adicionar item em receita</h2>
+            <form id="form-receita" class="form">
+              <label>
+                Prato
+                <select id="select-prato-receita" required></select>
+              </label>
+              <label>
+                Ingrediente
+                <select id="select-ingrediente-receita" required></select>
+              </label>
+              <label>
+                Quantidade do ingrediente por prato
+                <input id="input-qtd-receita" type="number" min="0.01" step="0.01" required />
+              </label>
+              <button type="submit" class="btn-primary">Adicionar à receita</button>
+            </form>
+          </section>
+
+          <!-- Lista de receita de um prato -->
+          <section class="card">
+            <h2>Receita de um prato</h2>
+            <label>
+              Selecione o prato
+              <select id="select-prato-receita-lista"></select>
+            </label>
+            <table class="table" id="tabela-receita">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Ingrediente</th>
+                  <th>Qtd</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </section>
+        </div>
+      </section>
+
+      <div id="toast" class="toast hidden"></div>
+    </main>
+  </div>
+</body>
+</html>
